@@ -1,27 +1,30 @@
 module IsoFlex
+using PyPlot
 
 using FFTW
 export flexural, viscoelastic_lithos, viscoelastic_mantle
 let
     global flexural
-function flexural(ero; Te=30e3, dy=100,dx=100, 
+function flexural(ero::Array{Float64,2}; Te=30e3, dy=100,dx=100, 
     E = 100e9, g = 9.81, v = .25, pm = 3300, 
-    bufferx = 0, buffery = 0, pc = 2750,buffer = 0,ncores=1)
+    pc = 2750,buffer::Int64 = 0,ncores::Int64 = 1)
     pw = 00;# water density
     m,n = size(ero);
     D = E*(Te)^3/(12*(1-v^2));
     Ly = m * dy;
     Lx = n * dx;
-
+    bufferx::Int64 = 0
+    buffery::Int64 = 0
     FFTW.set_num_threads(ncores)
+
     if mod(n,2) == 1
-        bufferx = bufferx+1;
+        bufferx .= bufferx.+1;
     end
     if mod(m,2) == 1
-        buffery = buffery+1;
+        buffery .= buffery.+1;
     end
     
-    appndl = zeros(m,buffer+bufferx);
+    appndl = zeros(m,buffer.+bufferx);
     for i = 1:buffer +bufferx
        appndl[:,i] .=  ero[:,1];
     end
@@ -39,8 +42,7 @@ function flexural(ero; Te=30e3, dy=100,dx=100,
         appndd[i,:] .=  ero[end,:];
     end
     ero = [appndu; ero; appndd];
-    h = real(fft(ero));
-
+    #imshow(ero)
     m,n = size(ero);
     k = zeros(Int(m/2+1),Int(n/2+1));
     k[1,1] = pc/(pm-pw);#(1+(D/(g*(pm-pc))*(2*pi*(1)/(Ly)).^4));
@@ -56,13 +58,15 @@ function flexural(ero; Te=30e3, dy=100,dx=100,
         end
     end
 
-    k = hcat(k, reverse(k[:,2:end-1],dims = 2));
-    k = vcat(k, reverse(k[2:end-1,:],dims = 1));
-
-    w = k .* h;
-    w = real(ifft(w));
-    w = w[buffer+1:end-buffer-bufferx,buffer+1:end-buffer-buffery];
-    return w
+        k = hcat(k, reverse(k[:,2:end-1],dims = 2));
+        k = vcat(k, reverse(k[2:end-1,:],dims = 1));
+    println("here")
+    h = fft(ero.+1e-6,[1,2]);
+    
+    w2 = k .* real(h)+imag(h)*1im.*k;
+    w = real(ifft(w2,[1,2]));
+    w3 = w[buffer+1:end-buffer-bufferx,buffer+1:end-buffer-buffery];
+    return w3
 end
 #global emaps,isomaps
 end
@@ -106,6 +110,7 @@ let emaps = zeros(1,1,1),isomaps=zeros(1,1,1)#This emulates static behavior in j
             appndd[i,:] .=  ero[end,:];
         end
         ero = [appndu; ero; appndd];
+        println(ero[1,:])
         h=h = fft(ero);
 
         m,n = size(ero);
