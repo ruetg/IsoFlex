@@ -44,27 +44,27 @@ function flexural(ero::Array{Float64,2}; Te=30e3, dy=100,dx=100,
     k = zeros(Int(m/2+1),Int(n/2+1));
     k[1,1] = pc/(pm-pw);#(1+(D/(g*(pm-pc))*(2*pi*(1)/(Ly)).^4));
     dGR = g*(pm-pw)
+    print(Nxy)
     for i = 2:Int(ceil((m-1)/2)+1)
         ky = (i - 1) / Ly
-        k[i, 1] =  pc / (pm - pw) * 1. / (1. + ( D / dGR * (2 * pi * ky) .^ 4) + 2. / dGR * pi ^ 2. * Ny * ky ^ 2);
+        k[i, 1] =  pc / (pm - pw) * 1. / (1. + ( D / dGR * (2 * pi * ky) .^ 4) + 4. / (pm * g) * pi ^ 2. * Ny * ky ^ 2);
     end
     for j = 2:Int(ceil((n-1)/2) + 1)
         kx = (j-1) / Lx
-        k[1, j] = pc / (pm - pw) * 1. / ( 1. +  ( D / dGR * (2 * pi * kx) .^ 4) + 2. / dGR * pi ^ 2. * Nx * kx ^ 2);
+        k[1, j] = pc / (pm - pw) * 1. / ( 1. +  ( D / dGR * (2 * pi * kx) .^ 4) + 4. / (pm * g) * pi ^ 2. * Nx * kx ^ 2);
     end
     for i = 2:Int(ceil((m-1)/2)+1)
         for j = 2:Int(ceil((n-1)/2)+1)
            
             ky = (i-1) / Ly
             kx = (j-1) / Lx
-            k[i,j] = pc/(pm - pw) .* 1. ./ (1. +  D / dGR * ( 2. * pi * sqrt( ky^2 + kx ^ 2. )) .^ 4. + 2. * pi ^ 2 / 
-                    dGR * ( Nx * kx ^ 2 + Ny * ky ^ 2 + Nxy * ky * kx ) );
+            k[i,j] = pc/(pm - pw) .* 1. ./ (1. +  D / dGR * ( 2. * pi * sqrt( ky^2 + kx ^ 2. )) .^ 4. + 4. * pi ^ 2 / 
+                    (pm*g) * ( Nx * kx ^ 2 + Ny * ky ^ 2 + Nxy * ky * kx ) );
         end
     end
 
         k = hcat(k, reverse(k[:,2:end-1],dims = 2));
         k = vcat(k, reverse(k[2:end-1,:],dims = 1));
-        print(k[3,5])
     h = fft(ero.+1e-6,[1,2]);
     
     w2 = k .* real(h)+imag(h)*1im.*k;
