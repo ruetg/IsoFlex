@@ -130,7 +130,6 @@ function flexural(ero::Array{Float64,2}; Te=30e3, dy=100,dx=100,
         Dprime = D .- Di;
         D = Di;
 
-        k = IsoFlex.kcalc(Di,pc,pm,0.00,g,m,n,Ly,Lx)
 
         k /= g * pc
 
