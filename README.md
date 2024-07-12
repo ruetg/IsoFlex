@@ -1,6 +1,6 @@
-Example using Julia - see tests.ipynb
+## Example using Julia - see tests.ipynb
 
-Example using MATLAB (no viscoelstic support):
+## Example using MATLAB (no viscoelstic support):
 
 L = zeros(501,501);
 
