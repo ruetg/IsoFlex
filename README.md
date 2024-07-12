@@ -16,7 +16,7 @@ Pc = 2700; % Crust density kg/m3
 
 Buffer = 100; %Edge buffer size in pixels (to prevent artifacts on the edges - assume continuous load)
 
-W = IsoFlex(L,Te,1000,1000,2700,100);
+W = IsoFlex(L,Te,dx,dy,Pc,Buffer);
 
 mesh(W)
 
